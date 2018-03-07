@@ -9,39 +9,41 @@ impl Example {
         let max_size = self.mins.len() + other.mins.len();
         let mut merged: Vec<u64> = Vec::with_capacity(max_size);
 
-        let mut self_iter = self.mins.iter();
-        let mut other_iter = other.mins.iter();
+        {
+            let mut self_iter = self.mins.iter();
+            let mut other_iter = other.mins.iter();
 
-        let mut self_value = self_iter.next();
-        let mut other_value = other_iter.next();
-        while !self_value.is_none() {
-            let value = self_value.unwrap();
-            match other_value {
-                None => {
-                    merged.push(*value);
-                    merged.extend(self_iter);
-                    break;
+            let mut self_value = self_iter.next();
+            let mut other_value = other_iter.next();
+            while !self_value.is_none() {
+                let value = self_value.unwrap();
+                match other_value {
+                    None => {
+                        merged.push(*value);
+                        merged.extend(self_iter);
+                        break;
+                    }
+                    Some(x) if x < value => {
+                        merged.push(*x);
+                        other_value = other_iter.next();
+                    }
+                    Some(x) if x == value => {
+                        merged.push(*x);
+                        other_value = other_iter.next();
+                        self_value = self_iter.next();
+                    }
+                    Some(x) if x > value => {
+                        merged.push(*value);
+                        self_value = self_iter.next();
+                    }
+                    Some(_) => {}
                 }
-                Some(x) if x < value => {
-                    merged.push(*x);
-                    other_value = other_iter.next();
-                }
-                Some(x) if x == value => {
-                    merged.push(*x);
-                    other_value = other_iter.next();
-                    self_value = self_iter.next();
-                }
-                Some(x) if x > value => {
-                    merged.push(*value);
-                    self_value = self_iter.next();
-                }
-                Some(_) => {}
             }
+            if let Some(value) = other_value {
+                merged.push(*value);
+            }
+            merged.extend(other_iter);
         }
-        if let Some(value) = other_value {
-            merged.push(*value);
-        }
-        merged.extend(other_iter);
 
         if merged.len() < (self.num as usize) || (self.num as usize) == 0 {
             self.mins = merged;
